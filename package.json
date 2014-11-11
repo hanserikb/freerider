@@ -12,10 +12,13 @@
     "body-parser": "~1.9.2",
     "cheerio": "~0.18.0",
     "request": "~2.47.0",
-    "express": "~4.10.2"
+    "express": "~4.10.2",
+    "moment": "~2.8.3"
   },
   "devDependencies": {
     "mocha": "~2.0.1",
-    "chai": "~1.10.0"
+    "chai": "~1.10.0",
+    "sinon-chai": "~2.6.0",
+    "sinon": "~1.11.1"
   }
 }
