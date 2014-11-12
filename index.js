@@ -87,12 +87,10 @@ app.get('/', function(req, res) {
         parsed.push({
           from: {
             name: anchors.eq(0).text(),
-            id: fromStationId,
             station: result[0]
           },
           to: {
             name: anchors.eq(1).text(),
-            id: toStationId,
             station: result[1]
           },
           car: car,
