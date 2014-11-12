@@ -17,7 +17,7 @@ app.get('/', function(req, res) {
     var $ = cheerio.load(html);
     var parsed = [];
     var rideCitiesNodes = ($('tr.highlight'));
-    async.eachSeries(rideCitiesNodes, function(item, theCallback) {
+    async.eachSeries(rideCitiesNodes, function(item, allDone) {
       var anchors = $(item).find('a');
       var additionalInfo = $(item).next().find('td span');
       var startDate = moment(additionalInfo.eq(0).text()).format();
@@ -28,27 +28,12 @@ app.get('/', function(req, res) {
       var toStationId = anchors.eq(1).attr('href').split('stationId=')[1];
 
       async.parallel([function(callback) {
-
-        client.get(fromStationId, function(err, reply) {
-          if (reply) {
-            callback(null, JSON.parse(reply));
-          } else {
-            scrapeStation(fromStationId, function(err, stationData) {
-              client.set(fromStationId, JSON.stringify(stationData));
-              callback(null, stationData);
-            });
-          }
+        checkCache(fromStationId, function(err, result) {
+          callback(null, result);
         });
       }, function(callback) {
-        client.get(toStationId, function(err, reply) {
-          if (reply) {
-            callback(null, JSON.parse(reply));
-          } else {
-            scrapeStation(toStationId, function(err, stationData) {
-              client.set(toStationId, JSON.stringify(stationData));
-              callback(null, stationData);
-            });
-          }
+        checkCache(toStationId, function(err, result){
+          callback(null, result);
         });
       }], function(err, result) {
         parsed.push({
@@ -64,13 +49,26 @@ app.get('/', function(req, res) {
           startData: startDate,
           endData: endData
         });
-        theCallback();
+        allDone();
       });
     }, function() {
       res.json(parsed);
     });
   });
 });
+
+function checkCache(stationId, callback) {
+  client.get(stationId, function(err, reply) {
+    if (reply) {
+      callback(null, JSON.parse(reply));
+    } else {
+      scrapeStation(stationId, function(err, stationData) {
+        client.set(stationId, JSON.stringify(stationData));
+        callback(null, stationData);
+      });
+    }
+  });
+}
 
 function scrapeStation(stationId, callback) {
 
