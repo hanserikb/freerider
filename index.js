@@ -30,28 +30,10 @@ app.get('/', function(req, res) {
       async.parallel([function(callback) {
 
         client.get(fromStationId, function(err, reply) {
-          console.log('Cached!', reply);
           if (reply) {
-            console.log('sending cached');
             callback(null, JSON.parse(reply));
           } else {
-            console.log(fromStationId, ' not cached, scraping');
-            request(baseUrl + 'stationInfo.aspx?stationId=' + fromStationId, function(error, response, html) {
-              var $$ = cheerio.load(html);
-
-              var scraped = $$('.displayDriverData').find('tr td');
-              var stationData = {
-                location: {
-                  street: scraped.eq(0).find('span').eq(0).text(),
-                  postalCode: scraped.eq(0).find('span').eq(1).text(),
-                  city: scraped.eq(0).find('span').eq(2).text()
-                },
-                contact: {
-                  email: scraped.eq(1).find('span').eq(1).text(),
-                  phone: scraped.eq(1).find('span').eq(2).text()
-                }
-              }
-
+            scrapeStation(fromStationId, function(err, stationData) {
               client.set(fromStationId, JSON.stringify(stationData));
               callback(null, stationData);
             });
@@ -60,24 +42,9 @@ app.get('/', function(req, res) {
       }, function(callback) {
         client.get(toStationId, function(err, reply) {
           if (reply) {
-            console.log('sending cached');
             callback(null, JSON.parse(reply));
           } else {
-            console.log('scraping')
-            request(baseUrl + 'stationInfo.aspx?stationId=' + toStationId, function(error, response, html) {
-              var $$ = cheerio.load(html);
-
-              var scraped = $$('.displayDriverData').find('tr td');
-              var stationData = {
-                location: {
-                  street: scraped.eq(0).find('span').eq(0).text(),
-                  postalCode: scraped.eq(0).find('span').eq(1).text(),
-                  city: scraped.eq(0).find('span').eq(2).text()
-                }, contact: {
-                  email: scraped.eq(1).find('span').eq(1).text(), phone: scraped.eq(1).find('span').eq(2).text()
-                }
-              };
-
+            scrapeStation(toStationId, function(err, stationData) {
               client.set(toStationId, JSON.stringify(stationData));
               callback(null, stationData);
             });
@@ -105,6 +72,25 @@ app.get('/', function(req, res) {
   });
 });
 
+function scrapeStation(stationId, callback) {
 
+  request(baseUrl + 'stationInfo.aspx?stationId=' + stationId, function(error, response, html) {
+    var $$ = cheerio.load(html);
+    var scraped = $$('.displayDriverData').find('tr td');
+    var stationData = {
+      location: {
+        street: scraped.eq(0).find('span').eq(0).text(),
+        postalCode: scraped.eq(0).find('span').eq(1).text(),
+        city: scraped.eq(0).find('span').eq(2).text()
+      },
+      contact: {
+        email: scraped.eq(1).find('span').eq(1).text(),
+        phone: scraped.eq(1).find('span').eq(2).text()
+      }
+    };
+    callback(null, stationData);
+  });
+
+}
 
 app.listen(3001);
