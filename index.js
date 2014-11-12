@@ -16,8 +16,8 @@ app.get('/', function(req, res) {
   request(baseUrl + 'list_transport_offer.aspx', function(error, response, html) {
     var $ = cheerio.load(html);
     var parsed = [];
-    var poo = ($('tr.highlight'));
-    async.eachSeries(poo, function(item, theCallback) {
+    var rideCitiesNodes = ($('tr.highlight'));
+    async.eachSeries(rideCitiesNodes, function(item, theCallback) {
       var anchors = $(item).find('a');
       var additionalInfo = $(item).next().find('td span');
       var startDate = moment(additionalInfo.eq(0).text()).format();
