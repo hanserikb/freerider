@@ -10,7 +10,10 @@ var app = express();
 app.get('/', function(req, res) {
   freeriderParser(function(error, result) {
     if(error) {
-      res.json(500, error);
+      console.log(error)
+      res.status(500).json({
+          error: 'Something went wrong'
+      });
     } else {
       res.json(result);
     }
