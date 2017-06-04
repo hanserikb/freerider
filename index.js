@@ -1,19 +1,12 @@
-var express         =   require('express');
-var bodyParser      =   require('body-parser');
-var freeriderParser =   require('./freerider-scraper');
-
-var app = express();
-
-
-
-
-app.get('/', function(req, res) {
-  freeriderParser(function(error, result) {
+const express         =   require('express');
+const freeriderParser =   require('./freerider-scraper');
+const cors            =   require('cors');
+const app = express();
+app.use(cors());
+app.get('/', (req, res) => {
+  freeriderParser((error, result) => {
     if(error) {
-      console.log(error)
-      res.status(500).json({
-          error: 'Something went wrong'
-      });
+      res.status(500).json(error);
     } else {
       res.json(result);
     }
