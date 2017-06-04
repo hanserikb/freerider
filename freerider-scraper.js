@@ -45,7 +45,7 @@ module.exports = function(moduleCallback) {
         });
       }], function(error, result) {
         if (error) {
-          eachSeriesCallback(err);
+          eachSeriesCallback(error);
         } else {
           parsed.push({
             from: {
@@ -72,7 +72,7 @@ module.exports = function(moduleCallback) {
 function checkCache(stationId, callback) {
   client.get(stationId, function(error, reply) {
     if(error) {
-      callback(err);
+      callback(error);
       return;
     }
     if (reply) {
@@ -99,17 +99,20 @@ function scrapeStation(stationId, callback) {
     }
     var $$ = cheerio.load(html);
     var scraped = $$('.displayDriverData').find('tr td');
+    var mapScript = $$('form').find('script');
     var stationData = {
       location: {
         street: scraped.eq(0).find('span').eq(0).text(),
         postalCode: scraped.eq(0).find('span').eq(1).text(),
-        city: scraped.eq(0).find('span').eq(2).text()
+        city: scraped.eq(0).find('span').eq(2).text(),
       },
       contact: {
         email: scraped.eq(1).find('span').eq(1).text(),
         phone: scraped.eq(1).find('span').eq(2).text()
       }
     };
+    var latLngMatch = mapScript.eq(1).text().match(/google\.maps\.LatLng\((.*)\)/);
+    stationData.location.latLng = latLngMatch ? latLngMatch[1] : null;
     callback(null, stationData);
   });
 
