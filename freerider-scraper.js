@@ -18,11 +18,13 @@ module.exports = function(moduleCallback) {
     var rideCitiesNodes = ($('tr.highlight'));
     async.eachSeries(rideCitiesNodes, function(item, eachSeriesCallback) {
       var anchors = $(item).find('a');
+      var bookButton = $(item).next().find('a');
+      var id = bookButton.attr('id').match(new RegExp('DataList[1-9]*_(ctl\\S*)_'))[1];
       var additionalInfo = $(item).next().find('td span');
       var startDate = moment(additionalInfo.eq(0).text()).format();
       var endData = moment(additionalInfo.eq(1).text()).format();
       var car = additionalInfo.eq(2).text();
-
+      
       var fromStationId = anchors.eq(0).attr('href').split('stationId=')[1];
       var toStationId = anchors.eq(1).attr('href').split('stationId=')[1];
 
@@ -58,7 +60,8 @@ module.exports = function(moduleCallback) {
             },
             car: car,
             startData: startDate,
-            endData: endData
+            endData: endData,
+            id: id
           });
           eachSeriesCallback(null);
         }
